@@ -1,0 +1,6 @@
+@spr311_web_api_HostAddress = http://localhost:5056
+
+GET {{spr311_web_api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
