@@ -15,6 +15,7 @@ namespace spr311_web_api.DAL
             : base(options) { }
 
         public DbSet<ProductEntity> Products { get; set; }
+        public DbSet<CategoryEntity> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +61,13 @@ namespace spr311_web_api.DAL
                     .WithOne(e => e.Role)
                     .HasForeignKey(rc => rc.RoleId)
                     .IsRequired();
+            });
+
+            modelBuilder.Entity<ProductEntity>(p =>
+            {
+                p.HasMany(e => e.Categories)
+                .WithMany(e => e.Products)
+                .UsingEntity("ProductCategories");
             });
         }
     }
