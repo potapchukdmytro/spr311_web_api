@@ -28,9 +28,9 @@ namespace spr311_web_api.BLL.Services.Category
             {
                 string? imageName = await _imageService.SaveImageAsync(dto.Image, Settings.CategoriesDir);
 
-                if(imageName != null)
+                if(!string.IsNullOrEmpty(entity.Image))
                 {
-                    entity.Image = Path.Combine(Settings.CategoriesDir, imageName);
+                    entity.Image = Settings.CategoriesDir + "/" + imageName;
                 }
             }
 
@@ -45,6 +45,11 @@ namespace spr311_web_api.BLL.Services.Category
             if (entity == null)
             {
                 return false;
+            }
+
+            if (!string.IsNullOrEmpty(entity.Image))
+            {
+                _imageService.DeleteImage(entity.Image);
             }
 
             bool result = await _categoryRepository.DeleteAsync(entity);
@@ -90,7 +95,25 @@ namespace spr311_web_api.BLL.Services.Category
 
         public async Task<bool> UpdateAsync(UpdateCategoryDto dto)
         {
-            var entity = _mapper.Map<CategoryEntity>(dto);
+            var entity = await _categoryRepository.GetByIdAsync(dto.Id);
+
+            if(entity == null)
+            {
+                return false;
+            }
+
+            entity = _mapper.Map(dto, entity);
+
+            if(dto.Image != null)
+            {
+                string? imageName = await _imageService.SaveImageAsync(dto.Image, Settings.CategoriesDir);
+
+                if (!string.IsNullOrEmpty(entity.Image))
+                {
+                    _imageService.DeleteImage(entity.Image);
+                }
+                entity.Image = Settings.CategoriesDir + "/" + imageName;
+            }
 
             bool result = await _categoryRepository.UpdateAsync(entity);
             return result;

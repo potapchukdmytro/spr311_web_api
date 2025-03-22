@@ -50,6 +50,18 @@ builder.Services
 // Add automapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("react_cors", opt =>
+    {
+        opt
+        .WithOrigins("http://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -81,6 +93,8 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(imagesPath),
     RequestPath = "/images"
 });
+
+app.UseCors("react_cors");
 
 app.UseHttpsRedirection();
 

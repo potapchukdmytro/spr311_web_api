@@ -40,6 +40,7 @@ namespace spr311_web_api.DAL.Repositories.Category
         public async Task<CategoryEntity?> GetByIdAsync(string id)
         {
             var entity = await _context.Categories
+                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == id);
             return entity;
         }
@@ -47,6 +48,7 @@ namespace spr311_web_api.DAL.Repositories.Category
         public async Task<CategoryEntity?> GetByNameAsync(string name)
         {
             var entity = await _context.Categories
+                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.NormalizedName == name.ToUpper());
             return entity;
         }
@@ -59,14 +61,17 @@ namespace spr311_web_api.DAL.Repositories.Category
 
         public async Task<bool> UpdateAsync(CategoryEntity entity)
         {
-            if (IsUniqueName(entity.Name))
+            var oldEntity = await GetByNameAsync(entity.Name);
+
+            if (oldEntity != null && oldEntity.Id != entity.Id)
             {
-                entity.NormalizedName = entity.Name.ToUpper();
-                _context.Categories.Update(entity);
-                int result = await _context.SaveChangesAsync();
-                return result != 0;
+                return false;
             }
-            return false;
+
+            entity.NormalizedName = entity.Name.ToUpper();
+            _context.Categories.Update(entity);
+            int result = await _context.SaveChangesAsync();
+            return result != 0;
         }
     }
 }

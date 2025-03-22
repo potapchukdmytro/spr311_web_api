@@ -4,9 +4,24 @@ namespace spr311_web_api.BLL.Services.Image
 {
     public class ImageService : IImageService
     {
+        public void DeleteImage(string filePath)
+        {
+            if (string.IsNullOrEmpty(Settings.ImagesPath))
+            {
+                return;
+            }
+
+            string workPath = Path.Combine(Settings.ImagesPath, filePath);
+
+            if (File.Exists(workPath))
+            {
+                File.Delete(workPath);
+            }
+        }
+
         public async Task<string?> SaveImageAsync(IFormFile image, string directory)
         {
-            if (Settings.ImagesPath == null)
+            if (string.IsNullOrEmpty(Settings.ImagesPath))
             {
                 return null;
             }
