@@ -20,4 +20,8 @@
     <ProjectReference Include="..\spr311_web_api.DAL\spr311_web_api.DAL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
 </Project>

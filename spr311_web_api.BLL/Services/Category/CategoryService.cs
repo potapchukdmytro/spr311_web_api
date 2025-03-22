@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using spr311_web_api.BLL.Dtos.Category;
+using spr311_web_api.BLL.Services.Image;
 using spr311_web_api.DAL.Entities;
 using spr311_web_api.DAL.Repositories.Category;
 
@@ -9,17 +10,29 @@ namespace spr311_web_api.BLL.Services.Category
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IImageService _imageService;
         private readonly IMapper _mapper;
 
-        public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
+        public CategoryService(ICategoryRepository categoryRepository, IMapper mapper, IImageService imageService)
         {
             _categoryRepository = categoryRepository;
             _mapper = mapper;
+            _imageService = imageService;
         }
 
         public async Task<bool> CreateAsync(CreateCategoryDto dto)
         {
             var entity = _mapper.Map<CategoryEntity>(dto);
+
+            if (dto.Image != null)
+            {
+                string? imageName = await _imageService.SaveImageAsync(dto.Image, Settings.CategoriesDir);
+
+                if(imageName != null)
+                {
+                    entity.Image = Path.Combine(Settings.CategoriesDir, imageName);
+                }
+            }
 
             bool result = await _categoryRepository.CreateAsync(entity);
             return result;

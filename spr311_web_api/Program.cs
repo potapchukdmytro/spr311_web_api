@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using spr311_web_api.BLL;
 using spr311_web_api.BLL.Services.Account;
 using spr311_web_api.BLL.Services.Category;
+using spr311_web_api.BLL.Services.Image;
 using spr311_web_api.BLL.Services.Product;
 using spr311_web_api.BLL.Services.Role;
 using spr311_web_api.DAL;
@@ -18,6 +21,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -55,6 +59,28 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+string rootPath = builder.Environment.ContentRootPath;
+string wwwroot = Path.Combine(rootPath, "wwwroot");
+string imagesPath = Path.Combine(wwwroot, "images");
+
+Settings.ImagesPath = imagesPath;
+
+if(!Directory.Exists(wwwroot))
+{
+    Directory.CreateDirectory(wwwroot);
+}
+
+if(!Directory.Exists(imagesPath))
+{
+    Directory.CreateDirectory(imagesPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imagesPath),
+    RequestPath = "/images"
+});
 
 app.UseHttpsRedirection();
 
