@@ -19,8 +19,8 @@ namespace spr311_web_api.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> GetAllAsync()
         {
-            var result = await _productService.GetAllAsync();
-            return Ok(result);
+            var response = await _productService.GetAllAsync();
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
 
         [HttpGet]
@@ -38,8 +38,8 @@ namespace spr311_web_api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(CreateProductDto dto)
         {
-            var result = await _productService.CreateAsync(dto);
-            return result ? Ok("Product created") : BadRequest("Product not created");
+            var response = await _productService.CreateAsync(dto);
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
 
         [HttpPut]

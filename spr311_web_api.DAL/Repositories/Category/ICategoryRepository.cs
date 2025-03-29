@@ -3,13 +3,9 @@
 namespace spr311_web_api.DAL.Repositories.Category
 {
     public interface ICategoryRepository
+        : IGenericRepository<CategoryEntity, string>
     {
-        Task<bool> CreateAsync(CategoryEntity entity);
-        Task<bool> UpdateAsync(CategoryEntity entity);
-        Task<bool> DeleteAsync(CategoryEntity entity);
-        Task<CategoryEntity?> GetByIdAsync(string id);
         Task<CategoryEntity?> GetByNameAsync(string name);
-        IQueryable<CategoryEntity> GetAll();
         bool IsUniqueName(string name);
     }
 }

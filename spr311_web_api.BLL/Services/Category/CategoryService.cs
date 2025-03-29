@@ -20,8 +20,13 @@ namespace spr311_web_api.BLL.Services.Category
             _imageService = imageService;
         }
 
-        public async Task<bool> CreateAsync(CreateCategoryDto dto)
+        public async Task<ServiceResponse> CreateAsync(CreateCategoryDto dto)
         {
+            if(!_categoryRepository.IsUniqueName(dto.Name))
+            {
+                return ServiceResponse.Error($"Категорія з іменем '{dto.Name}' вже існує");
+            }
+
             var entity = _mapper.Map<CategoryEntity>(dto);
 
             if (dto.Image != null)
@@ -35,16 +40,22 @@ namespace spr311_web_api.BLL.Services.Category
             }
 
             bool result = await _categoryRepository.CreateAsync(entity);
-            return result;
+
+            if (result)
+            {
+                return ServiceResponse.Success("Категорію успішно додано");
+            }
+
+            return ServiceResponse.Error("Не вдалося додати категорію");
         }
 
-        public async Task<bool> DeleteAsync(string id)
+        public async Task<ServiceResponse> DeleteAsync(string id)
         {
             var entity = await _categoryRepository.GetByIdAsync(id);
 
             if (entity == null)
             {
-                return false;
+                return ServiceResponse.Error($"Категорію з id '{id}' не знайдено");
             }
 
             if (!string.IsNullOrEmpty(entity.Image))
@@ -53,10 +64,16 @@ namespace spr311_web_api.BLL.Services.Category
             }
 
             bool result = await _categoryRepository.DeleteAsync(entity);
-            return result;
+
+            if (result)
+            {
+                return ServiceResponse.Success("Категорію успішно видалено");
+            }
+
+            return ServiceResponse.Error("Не вдалося видалити категорію");
         }
 
-        public async Task<IEnumerable<CategoryDto>> GetAllAsync()
+        public async Task<ServiceResponse> GetAllAsync()
         {
             var entities = await _categoryRepository
                 .GetAll()
@@ -64,42 +81,47 @@ namespace spr311_web_api.BLL.Services.Category
 
             var dtos = _mapper.Map<List<CategoryDto>>(entities);
 
-            return dtos;
+            return ServiceResponse.Success("Категорії отримано", dtos);
         }
 
-        public async Task<CategoryDto?> GetByIdAsync(string id)
+        public async Task<ServiceResponse> GetByIdAsync(string id)
         {
             var entity = await _categoryRepository.GetByIdAsync(id);
 
             if(entity != null)
             {
                 var dto = _mapper.Map<CategoryDto>(entity);
-                return dto;
+                return ServiceResponse.Success($"Категорію {entity.Name} отримано", dto);
             }
 
-            return null;
+            return ServiceResponse.Error("Категорію не знайдено");
         }
 
-        public async Task<CategoryDto?> GetByNameAsync(string name)
+        public async Task<ServiceResponse> GetByNameAsync(string name)
         {
             var entity = await _categoryRepository.GetByNameAsync(name);
 
             if (entity != null)
             {
                 var dto = _mapper.Map<CategoryDto>(entity);
-                return dto;
+                return ServiceResponse.Success($"Категорію '{entity.Name}' отримано", dto);
             }
 
-            return null;
+            return ServiceResponse.Error($"Категорію з іменем '{name}' не знайдено");
         }
 
-        public async Task<bool> UpdateAsync(UpdateCategoryDto dto)
+        public async Task<ServiceResponse> UpdateAsync(UpdateCategoryDto dto)
         {
+            if (!_categoryRepository.IsUniqueName(dto.Name))
+            {
+                return ServiceResponse.Error($"Категорія з іменем '{dto.Name}' вже існує");
+            }
+
             var entity = await _categoryRepository.GetByIdAsync(dto.Id);
 
             if(entity == null)
             {
-                return false;
+                return ServiceResponse.Error($"Категорію з id '{dto.Id}' не знайдено");
             }
 
             entity = _mapper.Map(dto, entity);
@@ -116,7 +138,13 @@ namespace spr311_web_api.BLL.Services.Category
             }
 
             bool result = await _categoryRepository.UpdateAsync(entity);
-            return result;
+            
+            if(result)
+            {
+                return ServiceResponse.Success("Категорію успішно оновлено");
+            }
+
+            return ServiceResponse.Error("Не вдалося оновити категорію");
         }
     }
 }

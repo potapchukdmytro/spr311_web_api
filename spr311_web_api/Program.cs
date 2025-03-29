@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -7,14 +8,17 @@ using spr311_web_api.BLL.Services.Category;
 using spr311_web_api.BLL.Services.Image;
 using spr311_web_api.BLL.Services.Product;
 using spr311_web_api.BLL.Services.Role;
+using spr311_web_api.BLL.Validators.Account;
 using spr311_web_api.DAL;
 using spr311_web_api.DAL.Entities.Identity;
 using spr311_web_api.DAL.Repositories.Category;
+using spr311_web_api.DAL.Repositories.Product;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add repositories
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // Add services to the container.
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -22,6 +26,9 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+
+// Add fluent validation
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

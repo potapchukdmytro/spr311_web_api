@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using spr311_web_api.DAL;
@@ -11,9 +12,11 @@ using spr311_web_api.DAL;
 namespace spr311_web_api.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250329074946_Create and Update date")]
+    partial class CreateandUpdatedate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -307,36 +310,6 @@ namespace spr311_web_api.DAL.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("spr311_web_api.DAL.Entities.ProductImageEntity", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Path")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdateDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductImages");
-                });
-
             modelBuilder.Entity("ProductCategories", b =>
                 {
                     b.HasOne("spr311_web_api.DAL.Entities.CategoryEntity", null)
@@ -415,17 +388,6 @@ namespace spr311_web_api.DAL.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("spr311_web_api.DAL.Entities.ProductImageEntity", b =>
-                {
-                    b.HasOne("spr311_web_api.DAL.Entities.ProductEntity", "Product")
-                        .WithMany("Images")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("spr311_web_api.DAL.Entities.Identity.AppRole", b =>
                 {
                     b.Navigation("RoleClaims");
@@ -442,11 +404,6 @@ namespace spr311_web_api.DAL.Migrations
                     b.Navigation("Tokens");
 
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("spr311_web_api.DAL.Entities.ProductEntity", b =>
-                {
-                    b.Navigation("Images");
                 });
 #pragma warning restore 612, 618
         }

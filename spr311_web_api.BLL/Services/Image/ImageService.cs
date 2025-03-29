@@ -49,5 +49,21 @@ namespace spr311_web_api.BLL.Services.Image
 
             return null;
         }
+
+        public async Task<List<string>> SaveProductImagesAsync(List<IFormFile> images, string path)
+        {
+            List<string> imagesName = new List<string>();
+
+            foreach (var image in images)
+            {
+                string? imageName = await SaveImageAsync(image, path);
+                if(imageName != null)
+                {
+                    imagesName.Add(imageName);
+                }
+            }
+
+            return imagesName;
+        }
     }
 }

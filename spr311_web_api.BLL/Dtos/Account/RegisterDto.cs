@@ -1,4 +1,6 @@
-﻿namespace spr311_web_api.BLL.Dtos.Account
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace spr311_web_api.BLL.Dtos.Account
 {
     public class RegisterDto
     {

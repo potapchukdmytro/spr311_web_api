@@ -18,15 +18,15 @@ namespace spr311_web_api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(CreateCategoryDto dto)
         {
-            bool result = await _categoryService.CreateAsync(dto);
-            return result ? Ok($"Категорія '{dto.Name}' створена") : BadRequest("Помилка під час створення");
+            var response = await _categoryService.CreateAsync(dto);
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
 
         [HttpPut]
         public async Task<IActionResult> UpdateAsync(UpdateCategoryDto dto)
         {
-            bool result = await _categoryService.UpdateAsync(dto);
-            return result ? Ok($"Категорія '{dto.Name}' оновлена") : BadRequest("Помилка під час оновлення");
+            var response = await _categoryService.UpdateAsync(dto);
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
 
         [HttpDelete]
@@ -37,32 +37,28 @@ namespace spr311_web_api.Controllers
                 return BadRequest("Id не отримано");
             }
 
-            bool result = await _categoryService.DeleteAsync(id);
-            return result ? Ok($"Категорія видалена") : BadRequest("Помилка під час видалення");
+            var response = await _categoryService.DeleteAsync(id);
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAsync(string? id, string? name)
         {
-            if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(id))
             {
-                var result = await _categoryService.GetAllAsync();
-                return Ok(result);
+                var responseId = await _categoryService.GetByIdAsync(id);
+                return responseId.IsSuccess ? Ok(responseId) : BadRequest(responseId);
             }
 
-            CategoryDto? dto = null;
-
-            if(!string.IsNullOrEmpty(id))
+            if (!string.IsNullOrEmpty(name))
             {
-                dto = await _categoryService.GetByIdAsync(id);
-            }
-            
-            if(dto == null && !string.IsNullOrEmpty(name))
-            {
-                dto = await _categoryService.GetByNameAsync(name);
+                var responseName = await _categoryService.GetByNameAsync(name);
+                return responseName.IsSuccess ? Ok(responseName) : BadRequest(responseName);
             }
 
-            return dto != null ? Ok(dto) : BadRequest("Категорію не знайдено");
+
+            var response = await _categoryService.GetAllAsync();
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
 
     }

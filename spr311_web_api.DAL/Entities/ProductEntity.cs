@@ -2,10 +2,9 @@
 
 namespace spr311_web_api.DAL.Entities
 {
-    public class ProductEntity
+    public class ProductEntity : BaseEntity<string>
     {
-        [Key]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public override string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
         [MaxLength(255)]
         public required string Name { get; set; }
@@ -17,5 +16,6 @@ namespace spr311_web_api.DAL.Entities
         public int Amount { get; set; }
 
         public ICollection<CategoryEntity> Categories { get; set; } = [];
+        public ICollection<ProductImageEntity> Images { get; set; } = [];
     }
 }

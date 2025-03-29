@@ -2,10 +2,9 @@
 
 namespace spr311_web_api.DAL.Entities
 {
-    public class CategoryEntity
+    public class CategoryEntity : BaseEntity<string>
     {
-        [Key]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public override string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
         [MaxLength(255)]
         public required string Name { get; set; }

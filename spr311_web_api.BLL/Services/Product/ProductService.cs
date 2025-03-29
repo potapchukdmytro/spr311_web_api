@@ -1,32 +1,76 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Npgsql.Internal;
 using spr311_web_api.BLL.Dtos.Product;
+using spr311_web_api.BLL.Services.Image;
 using spr311_web_api.DAL;
 using spr311_web_api.DAL.Entities;
+using spr311_web_api.DAL.Repositories.Category;
+using spr311_web_api.DAL.Repositories.Product;
 
 namespace spr311_web_api.BLL.Services.Product
 {
+    class Color
+    {
+        public string Name { get; set; }
+        public int Code { get; set; }
+    }
+
     public class ProductService : IProductService
     {
         private readonly AppDbContext _context;
+        private readonly IMapper _mapper;
+        private readonly IProductRepository _productRepository;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IImageService _imageService;
 
-        public ProductService(AppDbContext context)
+        public ProductService(AppDbContext context, IMapper mapper, IProductRepository productRepository, ICategoryRepository categoryRepository, IImageService imageService)
         {
             _context = context;
+            _mapper = mapper;
+            _productRepository = productRepository;
+            _categoryRepository = categoryRepository;
+            _imageService = imageService;
         }
 
-        public async Task<bool> CreateAsync(CreateProductDto dto)
+        public async Task<ServiceResponse> CreateAsync(CreateProductDto dto)
         {
-            var entity = new ProductEntity
-            {
-                Name = dto.Name,
-                Amount = dto.Amount,
-                Description = dto.Description,
-                Price = dto.Price
-            };
+            var entity = _mapper.Map<ProductEntity>(dto);
 
-            await _context.Products.AddAsync(entity);
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
+            // images
+            if (dto.Images.Count > 0)
+            {
+                string dirPath = Path.Combine(Settings.ProductsDir, entity.Id);
+
+                var imagesName = await _imageService.SaveProductImagesAsync(dto.Images, dirPath);
+
+                var imageEntities = imagesName.Select(i =>
+                    new ProductImageEntity
+                    {
+                        Name = i,
+                        Path = dirPath,
+                        ProductId = entity.Id
+                    });
+
+                entity.Images = imageEntities.ToArray();
+            }
+
+            // categories
+            var categories = _categoryRepository
+                .GetAll()
+                .Where(c => dto.Categories.Select(x => x.ToUpper()).Contains(c.NormalizedName))
+                .ToList();
+
+            entity.Categories = categories;
+
+            var result = await _productRepository.CreateAsync(entity);
+
+            if (result)
+            {
+                return ServiceResponse.Success("Товар додано");
+            }
+
+            return ServiceResponse.Error("Не вдалося додати товар");
         }
 
         public async Task<bool> DeleteAsync(string id)
@@ -44,19 +88,18 @@ namespace spr311_web_api.BLL.Services.Product
             return result > 0;
         }
 
-        public async Task<IEnumerable<ProductDto>> GetAllAsync()
+        public async Task<ServiceResponse> GetAllAsync()
         {
-            var entities = await _context.Products.ToListAsync();
+            var entities = await _productRepository
+                .GetAll()
+                .Include(p => p.Categories)
+                .Include(p => p.Images)
+                .AsNoTracking()
+                .ToListAsync();
 
-            var dtos = entities.Select(e => new ProductDto
-            {
-                Id = e.Id,
-                Name = e.Name,
-                Amount = e.Amount,
-                Description = e.Description,
-                Price = e.Price
-            });
-            return dtos;
+            var dtos = _mapper.Map<List<ProductDto>>(entities);
+
+            return ServiceResponse.Success("Товари отримано", dtos);
         }
 
         public async Task<ProductDto?> GetByIdAsync(string id)
