@@ -88,16 +88,22 @@ namespace spr311_web_api.BLL.Services.Product
             return result > 0;
         }
 
-        public async Task<ServiceResponse> GetAllAsync()
+        public async Task<ServiceResponse> GetAllAsync(string? category)
         {
-            var entities = await _productRepository
+            var entities = _productRepository
                 .GetAll()
                 .Include(p => p.Categories)
                 .Include(p => p.Images)
-                .AsNoTracking()
-                .ToListAsync();
+                .AsNoTracking();
 
-            var dtos = _mapper.Map<List<ProductDto>>(entities);
+            if (!string.IsNullOrEmpty(category))
+            {
+                entities = entities.Where(e => e.Categories.Select(c => c.NormalizedName).Contains(category.ToUpper()));
+            }
+
+            var list = await entities.ToListAsync();
+
+            var dtos = _mapper.Map<List<ProductDto>>(list);
 
             return ServiceResponse.Success("Товари отримано", dtos);
         }

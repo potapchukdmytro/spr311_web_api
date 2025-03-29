@@ -33,7 +33,7 @@ namespace spr311_web_api.BLL.Services.Category
             {
                 string? imageName = await _imageService.SaveImageAsync(dto.Image, Settings.CategoriesDir);
 
-                if(!string.IsNullOrEmpty(entity.Image))
+                if(!string.IsNullOrEmpty(imageName))
                 {
                     entity.Image = Settings.CategoriesDir + "/" + imageName;
                 }

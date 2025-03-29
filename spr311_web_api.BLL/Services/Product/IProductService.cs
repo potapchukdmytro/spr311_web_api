@@ -8,6 +8,6 @@ namespace spr311_web_api.BLL.Services.Product
         public Task<bool> UpdateAsync(UpdateProductDto dto); 
         public Task<bool> DeleteAsync(string id);
         public Task<ProductDto?> GetByIdAsync(string id);
-        public Task<ServiceResponse> GetAllAsync();
+        public Task<ServiceResponse> GetAllAsync(string? category);
     }
 }

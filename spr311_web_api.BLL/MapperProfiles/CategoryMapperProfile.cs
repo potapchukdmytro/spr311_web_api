@@ -10,6 +10,7 @@ namespace spr311_web_api.BLL.MapperProfiles
         {
             // CreateCategoryDto -> CategoryEntity
             CreateMap<CreateCategoryDto, CategoryEntity>()
+                .ForMember(dest => dest.NormalizedName, opt => opt.MapFrom(src => src.Name.ToUpper()))
                 .ForMember(dest => dest.Image, opt => opt.Ignore());
 
             // UpdateCategoryDto -> CategoryEntity

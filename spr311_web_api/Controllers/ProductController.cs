@@ -17,9 +17,9 @@ namespace spr311_web_api.Controllers
         }
 
         [HttpGet("list")]
-        public async Task<IActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAllAsync(string? category)
         {
-            var response = await _productService.GetAllAsync();
+            var response = await _productService.GetAllAsync(category);
             return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
 
