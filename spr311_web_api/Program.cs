@@ -1,10 +1,14 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
 using spr311_web_api.BLL;
+using spr311_web_api.BLL.Configuration;
 using spr311_web_api.BLL.Services.Account;
 using spr311_web_api.BLL.Services.Category;
+using spr311_web_api.BLL.Services.EmailService;
 using spr311_web_api.BLL.Services.Image;
 using spr311_web_api.BLL.Services.Product;
 using spr311_web_api.BLL.Services.Role;
@@ -13,6 +17,7 @@ using spr311_web_api.DAL;
 using spr311_web_api.DAL.Entities.Identity;
 using spr311_web_api.DAL.Repositories.Category;
 using spr311_web_api.DAL.Repositories.Product;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +31,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Add fluent validation
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
@@ -39,6 +45,38 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql("name=PostgresLocal");
 });
+
+// add jwt
+string secretKey = builder.Configuration["JwtSettings:SecretKey"]
+    ?? throw new ArgumentNullException("jwt secret key is null");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = true,
+            ValidateIssuer = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            RequireExpirationTime = true,
+            ClockSkew = TimeSpan.Zero,
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+        };
+    });
+
+// Configure
+var emailSection = builder.Configuration.GetSection("EmailSettings");
+builder.Services.Configure<EmailSettings>(emailSection);
+
+var jwtSection = builder.Configuration.GetSection("JwtSettings");
+builder.Services.Configure<JwtSettings>(jwtSection);
 
 // Add identity
 builder.Services
@@ -84,6 +122,7 @@ string wwwroot = Path.Combine(rootPath, "wwwroot");
 string imagesPath = Path.Combine(wwwroot, "images");
 
 Settings.ImagesPath = imagesPath;
+Settings.RootPath = wwwroot;
 
 if(!Directory.Exists(wwwroot))
 {
@@ -105,6 +144,7 @@ app.UseCors("react_cors");
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

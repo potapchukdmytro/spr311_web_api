@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.Internal;
 using spr311_web_api.BLL.Dtos.Product;
 using spr311_web_api.BLL.Services.Image;
 using spr311_web_api.DAL;

@@ -5,6 +5,7 @@ namespace spr311_web_api.BLL.Services.Account
 {
     public interface IAccountService
     {
-        Task<AppUser?> RegisterAsync(RegisterDto dto);
+        Task<ServiceResponse> LoginAsync(LoginDto dto);
+        Task<ServiceResponse> RegisterAsync(RegisterDto dto);
     }
 }

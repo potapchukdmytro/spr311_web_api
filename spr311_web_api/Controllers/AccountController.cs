@@ -18,6 +18,13 @@ namespace spr311_web_api.Controllers
             _registerValidator = registerValidator;
         }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginAsync(LoginDto dto)
+        {
+            var response = await _accountService.LoginAsync(dto);
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync(RegisterDto dto)
         {
@@ -36,6 +43,13 @@ namespace spr311_web_api.Controllers
             }
 
             return Ok(user);
+        }
+
+        [HttpGet("confirmEmail")]
+        public IActionResult ConfirmEmail(string? userId, string? token)
+        {
+            // потрібно написати код підтвердження пошти
+            return Redirect("http://localhost:3000");
         }
     }
 }
