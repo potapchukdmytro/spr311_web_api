@@ -1,9 +1,17 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace spr311_web_api.BLL.Services.Image
 {
     public class ImageService : IImageService
     {
+        private readonly ILogger<ImageService> _logger;
+
+        public ImageService(ILogger<ImageService> logger)
+        {
+            _logger = logger;
+        }
+
         public void DeleteImage(string filePath)
         {
             if (string.IsNullOrEmpty(Settings.ImagesPath))
@@ -42,6 +50,7 @@ namespace spr311_web_api.BLL.Services.Image
                 using (var stream = File.Create(filePath))
                 {
                     await image.CopyToAsync(stream);
+                    _logger.LogInformation($"Image saved: {filePath}; {DateTime.Now}");
                 }
 
                 return imageName;

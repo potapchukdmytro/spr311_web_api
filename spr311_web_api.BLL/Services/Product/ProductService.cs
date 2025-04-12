@@ -9,12 +9,6 @@ using spr311_web_api.DAL.Repositories.Product;
 
 namespace spr311_web_api.BLL.Services.Product
 {
-    class Color
-    {
-        public string Name { get; set; }
-        public int Code { get; set; }
-    }
-
     public class ProductService : IProductService
     {
         private readonly AppDbContext _context;

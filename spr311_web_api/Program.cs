@@ -15,8 +15,10 @@ using spr311_web_api.BLL.Services.Role;
 using spr311_web_api.BLL.Validators.Account;
 using spr311_web_api.DAL;
 using spr311_web_api.DAL.Entities.Identity;
+using spr311_web_api.DAL.Intializer;
 using spr311_web_api.DAL.Repositories.Category;
 using spr311_web_api.DAL.Repositories.Product;
+using spr311_web_api.Middlewares;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,6 +73,11 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+// Logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // Configure
 var emailSection = builder.Configuration.GetSection("EmailSettings");
 builder.Services.Configure<EmailSettings>(emailSection);
@@ -108,6 +115,10 @@ builder.Services.AddCors(opt =>
 });
 
 var app = builder.Build();
+
+// Middlewares
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<LoggingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -148,5 +159,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.Seed();
 
 app.Run();
