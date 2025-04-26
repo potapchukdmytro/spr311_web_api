@@ -7,12 +7,14 @@ using Microsoft.IdentityModel.Tokens;
 using spr311_web_api.BLL;
 using spr311_web_api.BLL.Configuration;
 using spr311_web_api.BLL.Services.Account;
+using spr311_web_api.BLL.Services.Bot;
 using spr311_web_api.BLL.Services.Category;
 using spr311_web_api.BLL.Services.EmailService;
 using spr311_web_api.BLL.Services.Image;
 using spr311_web_api.BLL.Services.Jwt;
 using spr311_web_api.BLL.Services.Product;
 using spr311_web_api.BLL.Services.Role;
+using spr311_web_api.BLL.Services.Telegram;
 using spr311_web_api.BLL.Validators.Account;
 using spr311_web_api.DAL;
 using spr311_web_api.DAL.Entities.Identity;
@@ -38,6 +40,9 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<ITelegramService, TelegramService>();
+
+builder.Services.AddSingleton<ITelegramBotService, TelegramBotService>();
 
 // Add fluent validation
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
@@ -88,6 +93,14 @@ builder.Services.Configure<EmailSettings>(emailSection);
 
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSection);
+
+var botSettings = builder.Configuration.GetSection("TelegramBot");
+builder.Services.Configure<BotSettings>(botSettings);
+
+builder.Services.AddControllers(options =>
+{
+    options.ModelValidatorProviders.Clear();
+});
 
 // Add identity
 builder.Services
