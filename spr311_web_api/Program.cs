@@ -10,12 +10,14 @@ using spr311_web_api.BLL.Services.Account;
 using spr311_web_api.BLL.Services.Category;
 using spr311_web_api.BLL.Services.EmailService;
 using spr311_web_api.BLL.Services.Image;
+using spr311_web_api.BLL.Services.Jwt;
 using spr311_web_api.BLL.Services.Product;
 using spr311_web_api.BLL.Services.Role;
 using spr311_web_api.BLL.Validators.Account;
 using spr311_web_api.DAL;
 using spr311_web_api.DAL.Entities.Identity;
 using spr311_web_api.DAL.Intializer;
+using spr311_web_api.DAL.Repositories.Auth;
 using spr311_web_api.DAL.Repositories.Category;
 using spr311_web_api.DAL.Repositories.Product;
 using spr311_web_api.Middlewares;
@@ -26,6 +28,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add repositories
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
 // Add services to the container.
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -34,6 +37,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 // Add fluent validation
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();

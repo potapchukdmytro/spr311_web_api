@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using spr311_web_api.BLL.Configuration;
 using spr311_web_api.BLL.Dtos.Account;
 using spr311_web_api.BLL.Services.EmailService;
+using spr311_web_api.BLL.Services.Jwt;
 using spr311_web_api.DAL.Entities.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,12 +17,14 @@ namespace spr311_web_api.BLL.Services.Account
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailService _emailService;
         private readonly JwtSettings _jwtSettings;
+        private readonly IJwtService _jwtService;
 
-        public AccountService(UserManager<AppUser> userManager, IEmailService emailService, IOptions<JwtSettings> jwtOptions)
+        public AccountService(UserManager<AppUser> userManager, IEmailService emailService, IOptions<JwtSettings> jwtOptions, IJwtService jwtService)
         {
             _userManager = userManager;
             _emailService = emailService;
             _jwtSettings = jwtOptions.Value;
+            _jwtService = jwtService;
         }
 
         public async Task<ServiceResponse> RegisterAsync(RegisterDto dto)
@@ -116,28 +119,9 @@ namespace spr311_web_api.BLL.Services.Account
                 return ServiceResponse.Error("Пароль вказано не вірно");
             }
 
-            // Generate jwt token
-            var claims = new Claim[]
-            {
-                new Claim("userId", user.Id),
-                new Claim("email", user.Email ?? ""),
-                new Claim("userName", user.UserName ?? "")
-            };
+            var tokens = await _jwtService.GenerateTokensAsync(user);
 
-            var bytes = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
-            var securityKey = new SymmetricSecurityKey(bytes);
-
-            var securityToken = new JwtSecurityToken(
-                audience: _jwtSettings.Audience,
-                issuer: _jwtSettings.Issuer,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpMinutes),
-                signingCredentials: new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256)
-                );
-
-            string jwtToken = new JwtSecurityTokenHandler().WriteToken(securityToken);
-
-            return ServiceResponse.Success("Успішний вхід", jwtToken);
+            return ServiceResponse.Success("Успішний вхід", tokens.Payload);
         }
     }
 }
