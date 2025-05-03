@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using spr311_web_api.BLL;
 using spr311_web_api.BLL.Configuration;
 using spr311_web_api.BLL.Services.Account;
@@ -83,9 +84,13 @@ builder.Services.AddAuthentication(options =>
     });
 
 // Logging
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log_.log", rollingInterval: RollingInterval.Minute)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Configure
 var emailSection = builder.Configuration.GetSection("EmailSettings");
