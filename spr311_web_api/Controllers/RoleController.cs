@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using spr311_web_api.BLL.Dtos.Role;
 using spr311_web_api.BLL.Services.Role;
 
@@ -6,6 +8,7 @@ namespace spr311_web_api.Controllers
 {
     [ApiController]
     [Route("api/role")]
+    [Authorize(Roles = "admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class RoleController : Controller
     {
         private readonly IRoleService _roleService;

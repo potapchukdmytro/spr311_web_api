@@ -7,6 +7,7 @@ using spr311_web_api.BLL.Dtos.Auth;
 using spr311_web_api.DAL.Entities;
 using spr311_web_api.DAL.Entities.Identity;
 using spr311_web_api.DAL.Repositories.Auth;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -29,7 +30,7 @@ namespace spr311_web_api.BLL.Services.Jwt
 
         public async Task<ServiceResponse> GenerateTokensAsync(AppUser user)
         {
-            var accessToken = GenerateAccessToken(user);
+            var accessToken = await GenerateAccessTokenAsync(user);
             var refreshToken = GenerateRefreshToken();
 
             await SaveRefreshTokenAsync(refreshToken, user.Id, accessToken.Id);
@@ -112,9 +113,9 @@ namespace spr311_web_api.BLL.Services.Jwt
             return principals;
         }
 
-        private JwtSecurityToken GenerateAccessToken(AppUser user)
+        private async Task<JwtSecurityToken> GenerateAccessTokenAsync(AppUser user)
         {
-            var claims = new Claim[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("userId", user.Id),
@@ -122,7 +123,21 @@ namespace spr311_web_api.BLL.Services.Jwt
                 new Claim("userName", user.UserName ?? "")
             };
 
-            var bytes = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey ?? "");
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            if(userRoles.Count > 0)
+            {
+                foreach (var role in userRoles)
+                {
+                    claims.Add(new Claim("roles", role));
+                }
+            }
+            else
+            {
+                claims.Add(new Claim("roles", "user"));
+            }
+
+                var bytes = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey ?? "");
             var securityKey = new SymmetricSecurityKey(bytes);
 
             var securityToken = new JwtSecurityToken(
